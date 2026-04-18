@@ -531,6 +531,31 @@ def run_full_analysis(
 
         logger.info("\n任务执行完成")
 
+        # ==========================
+# ✅ 修复：自动写入个股报告到 reports 文件夹
+# ==========================
+import os
+os.makedirs("./reports", exist_ok=True)
+
+report_content = "# 每日股票分析报告\n\n"
+report_content += "## 📊 大盘数据\n"
+report_content += market_report if market_report else "无大盘数据\n\n"
+
+report_content += "\n## 🚀 个股分析\n"
+if results:
+    # 用你现有的 dashboard_content 生成报告，格式和飞书文档保持一致
+    dashboard_content = pipeline.notifier.generate_aggregate_report(
+        results,
+        getattr(config, 'report_type', 'simple'),
+    )
+    report_content += dashboard_content
+
+with open("./reports/daily_report.md", "w", encoding="utf-8") as f:
+    f.write(report_content)
+
+logger.info(f"✅ 报告已写入 ./reports/daily_report.md")
+logger.info(f"✅ 包含股票数量：{len(results)} 只")
+
         # === 新增：生成飞书云文档 ===
         try:
             from src.feishu_doc import FeishuDocManager
