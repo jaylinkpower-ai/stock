@@ -534,7 +534,6 @@ def run_full_analysis(
         # ==========================
 # ✅ 修复：自动写入个股报告到 reports 文件夹
 # ==========================
-import os
 os.makedirs("./reports", exist_ok=True)
 
 report_content = "# 每日股票分析报告\n\n"
