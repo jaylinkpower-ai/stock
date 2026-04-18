@@ -529,37 +529,37 @@ def run_full_analysis(
                     f"评分 {r.sentiment_score} | {r.trend_prediction}"
                 )
 
+        # ==========================
+        # 生成分析报告到 reports 文件夹
+        # ==========================
+        os.makedirs("./reports", exist_ok=True)
+        report_content = "# 每日股票分析报告\n\n"
+
+        # 大盘数据
+        if 'market_report' in locals() and market_report:
+            report_content += f"## 📊 大盘数据\n{market_report}\n\n"
+        else:
+            report_content += "## 📊 大盘数据\n未执行大盘复盘分析\n\n"
+
+        # 个股数据
+        report_content += "## 🚀 个股分析\n"
+        if results:
+            for r in sorted(results, key=lambda x: x.sentiment_score, reverse=True):
+                report_content += f"### {r.name}({r.code})\n"
+                report_content += f"- 操作建议：{r.operation_advice}\n"
+                report_content += f"- 趋势预测：{r.trend_prediction}\n"
+                report_content += f"- 评分：{r.sentiment_score}\n\n"
+
+        # 写入文件
+        try:
+            with open("./reports/daily_report.md", "w", encoding="utf-8") as f:
+                f.write(report_content)
+            logger.info("✅ 报告已写入 ./reports/daily_report.md")
+            logger.info(f"✅ 包含股票数量：{len(results)} 只")
+        except Exception as e:
+            logger.error(f"❌ 写入报告失败: {e}")
+
         logger.info("\n任务执行完成")
-        
-# ==========================
-# 最终修复：自动写入个股报告到 reports 文件夹
-# ==========================
-os.makedirs("./reports", exist_ok=True)
-
-report_content = "# 每日股票分析报告\n\n"
-
-# 安全处理大盘数据，避免变量不存在报错
-if 'market_report' in locals() and market_report:
-    report_content += "## 📊 大盘数据\n"
-    report_content += market_report + "\n\n"
-else:
-    report_content += "## 📊 大盘数据\n"
-    report_content += "未执行大盘复盘分析\n\n"
-
-# 写入个股分析，直接用日志里的摘要，不依赖 pipeline 变量
-report_content += "## 🚀 个股分析\n"
-if results:
-    for r in sorted(results, key=lambda x: x.sentiment_score, reverse=True):
-        report_content += f"### {r.name}({r.code})\n"
-        report_content += f"- 操作建议：{r.operation_advice}\n"
-        report_content += f"- 趋势预测：{r.trend_prediction}\n"
-        report_content += f"- 评分：{r.sentiment_score}\n\n"
-
-with open("./reports/daily_report.md", "w", encoding="utf-8") as f:
-    f.write(report_content)
-
-logger.info(f"✅ 报告已写入 ./reports/daily_report.md")
-logger.info(f"✅ 包含股票数量：{len(results)} 只")
 
         # === 新增：生成飞书云文档 ===
         try:
